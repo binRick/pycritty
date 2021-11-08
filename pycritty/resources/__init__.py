@@ -8,6 +8,8 @@ fonts_file = ConfigFile(base_dir.path, 'fonts', ConfigFile.YAML)
 themes_dir = ConfigDir(base_dir.path / 'themes')
 saves_dir = ConfigDir(base_dir.path / 'saves')
 hosts_dir = ConfigDir(base_dir.path / 'hosts')
+shells_dir = ConfigDir(base_dir.path / 'shells')
+commands_dir = ConfigDir(base_dir.path / 'commands')
 
 
 def get_theme(theme: str) -> ConfigFile:

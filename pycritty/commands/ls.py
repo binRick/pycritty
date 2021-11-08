@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from .command import Command
 from .. import PycrittyError
-from ..resources import fonts_file, themes_dir, saves_dir, hosts_dir
+from ..resources import fonts_file, themes_dir, saves_dir, hosts_dir, shells_dir, commands_dir
 from ..resources.resource import Resource
 from ..io import log
 from ..io.yio import read_yaml
@@ -15,6 +15,8 @@ class ListResource(Command):
             'configs': ('Configs', log.Color.CYAN, self.list_configs),
             'pids': ('Pids', log.Color.YELLOW, self.list_pids),
             'hosts': ('Hosts', log.Color.GREEN, self.list_hosts),
+            'shells': ('Shells', log.Color.RED, self.list_shells),
+            'commands': ('Commands', log.Color.PURPLE, self.list_commands),
         }
 
     def _list_dir(self, directory: Resource):
@@ -28,10 +30,24 @@ class ListResource(Command):
 
         return self._list_dir(themes_dir)
 
+    def list_shells(self) -> List[str]:
+        if not shells_dir.exists():
+            raise PycrittyError(
+                f'Failed listing shells, directory {shells_dir.path} not found'
+            )
+        return self._list_dir(shells_dir)
+
+    def list_commands(self) -> List[str]:
+        if not commands_dir.exists():
+            raise PycrittyError(
+                f'Failed listing commands, directory {commands_dir.path} not found'
+            )
+        return self._list_dir(commands_dir)
+
     def list_hosts(self) -> List[str]:
         if not hosts_dir.exists():
             raise PycrittyError(
-                f'Failed listing hosts, directory {themes_dir.path} not found'
+                f'Failed listing hosts, directory {hosts_dir.path} not found'
             )
         return self._list_dir(hosts_dir)
 

@@ -1,11 +1,6 @@
 import argparse
 from .pycritty import subparsers, formatter
 
-from rich import print
-import psutil
-
-
-
 list_parser = subparsers.add_parser(
     'ls',
     help='List available resources',
@@ -48,6 +43,16 @@ list_parser.add_argument(
     help='Outlist of alacritty pids',
 )
 
+list_parser.add_argument(
+    '-C', '--commands',
+    action='store_true',
+    help='List Commands',
+)
+list_parser.add_argument(
+    '-S', '--shells',
+    action='store_true',
+    help='List Shells',
+)
 list_parser.add_argument(
     '-i', '--iterable',
     action='store_true',
