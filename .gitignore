@@ -140,3 +140,7 @@ cython_debug/
 # IDEs
 .idea
 .vscode
+*.swp
+*/.v/*
+./.v/*
+.v/*

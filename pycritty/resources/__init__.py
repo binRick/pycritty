@@ -7,6 +7,7 @@ config_file = ConfigFile(base_dir.path, 'alacritty', ConfigFile.YAML)
 fonts_file = ConfigFile(base_dir.path, 'fonts', ConfigFile.YAML)
 themes_dir = ConfigDir(base_dir.path / 'themes')
 saves_dir = ConfigDir(base_dir.path / 'saves')
+hosts_dir = ConfigDir(base_dir.path / 'hosts')
 
 
 def get_theme(theme: str) -> ConfigFile:

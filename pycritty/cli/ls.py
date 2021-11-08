@@ -1,6 +1,10 @@
 import argparse
 from .pycritty import subparsers, formatter
 
+from rich import print
+import psutil
+
+
 
 list_parser = subparsers.add_parser(
     'ls',
@@ -31,6 +35,17 @@ list_parser.add_argument(
     '-a', '--all',
     action='store_true',
     help='List all (default)',
+)
+
+list_parser.add_argument(
+    '-H', '--hosts',
+    action='store_true',
+    help='List Hosts',
+)
+list_parser.add_argument(
+    '-p', '--pids',
+    action='store_true',
+    help='Outlist of alacritty pids',
 )
 
 list_parser.add_argument(

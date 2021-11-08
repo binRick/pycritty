@@ -1,11 +1,11 @@
 from typing import List, Dict, Any
 from .command import Command
 from .. import PycrittyError
-from ..resources import fonts_file, themes_dir, saves_dir
+from ..resources import fonts_file, themes_dir, saves_dir, hosts_dir
 from ..resources.resource import Resource
 from ..io import log
 from ..io.yio import read_yaml
-
+import psutil
 
 class ListResource(Command):
     def __init__(self):
@@ -13,6 +13,8 @@ class ListResource(Command):
             'themes': ('Themes', log.Color.BLUE, self.list_themes),
             'fonts': ('Fonts', log.Color.PURPLE, self.list_fonts),
             'configs': ('Configs', log.Color.CYAN, self.list_configs),
+            'pids': ('Pids', log.Color.YELLOW, self.list_pids),
+            'hosts': ('Hosts', log.Color.GREEN, self.list_hosts),
         }
 
     def _list_dir(self, directory: Resource):
@@ -25,6 +27,21 @@ class ListResource(Command):
             )
 
         return self._list_dir(themes_dir)
+
+    def list_hosts(self) -> List[str]:
+        if not hosts_dir.exists():
+            raise PycrittyError(
+                f'Failed listing hosts, directory {themes_dir.path} not found'
+            )
+        return self._list_dir(hosts_dir)
+
+    def list_pids(self) -> List[str]:
+        pids = []
+        for proc in psutil.process_iter(['pid', 'name']):
+            if proc.info["name"] == "alacritty":
+                if not proc.info["pid"] in pids:
+                    pids.append(proc.info["pid"])
+        return pids
 
     def list_configs(self) -> List[str]:
         if not saves_dir.exists():
