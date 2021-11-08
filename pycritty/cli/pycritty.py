@@ -30,6 +30,12 @@ parser.add_argument(
     help='Change theme, choose from ~/.config/alacritty/themes',
 )
 parser.add_argument(
+    '-S', '--shell',
+    dest='change_shell',
+    metavar='SHELL',
+    help='Change shell',
+)
+parser.add_argument(
     '-f', '--font',
     dest='change_font',
     metavar='FONT',

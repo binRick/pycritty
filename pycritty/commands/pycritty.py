@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from .command import Command
 from .. import resources, PycrittyError
 from ..io import log, yio
-
+from rich import print, pretty, inspect
 
 class ConfigError(PycrittyError):
     def __init__(self, message='Error applying configuration'):
@@ -61,6 +61,7 @@ class Pycritty(Command):
             'font_offset': self.change_font_offset,
             'padding': self.change_padding,
             'opacity': self.change_opacity,
+            'shell': self.change_shell,
         }
 
         for opt, arg in kwargs.items():
@@ -159,6 +160,14 @@ class Pycritty(Command):
             log.warn(f'"font" prop was not present in {resources.config_file}')
         self.config['font']['size'] = size
         log.ok(f'Font size set to {size:.1f}')
+
+    def change_shell(self, shell: str):
+        shell_file = ''
+        log.ok(f'Reading shell {shell} config from {shell_file}')
+        #shell_config = yio.read_yaml(shell_file)
+        #print(self.config)
+        self.config['shell']['program'] = shell
+        log.ok(f'Set Shell to {shell}')
 
     def change_opacity(self, opacity: float):
         if opacity < 0.0 or opacity > 1.0:

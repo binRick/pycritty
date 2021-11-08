@@ -30,10 +30,11 @@ class SaveConfig(Command):
         else:
             dest_file.create()
             yio.write_yaml(conf, dest_file)
-            print(conf)
             log.ok('Config saved =>', log.Color.BLUE, dest_file)
-            console.print("Hello", "World!", style="bold red")
-            console.print(":smiley: :vampire: :pile_of_poo: :thumbs_up: :raccoon:")
+            if False:
+               print(conf)
+               console.print("Hello", "World!", style="bold red")
+               console.print(":smiley: :vampire: :pile_of_poo: :thumbs_up: :raccoon:")
 
 
 
