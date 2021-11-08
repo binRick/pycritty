@@ -5,6 +5,9 @@ from .command import Command
 from ..io import log, yio
 from ..resources import config_file, saves_dir
 from ..resources.resource import ConfigFile
+from rich import print, pretty, inspect
+from rich.console import Console
+console = Console()
 
 
 class SaveConfig(Command):
@@ -27,7 +30,12 @@ class SaveConfig(Command):
         else:
             dest_file.create()
             yio.write_yaml(conf, dest_file)
+            print(conf)
             log.ok('Config saved =>', log.Color.BLUE, dest_file)
+            console.print("Hello", "World!", style="bold red")
+            console.print(":smiley: :vampire: :pile_of_poo: :thumbs_up: :raccoon:")
+
+
 
     def execute(self, actions: Dict[str, Any]):
         config_name = actions['name']

@@ -58,7 +58,8 @@ def write_yaml(y: Dict[str, Any], file: Union[Path, Resource]):
 
     >>> write_yaml({'example': 123}, Path().home() / 'exmaple.yaml')
     """
-
+    print("WRITE YAML")
+    print(y)
     if isinstance(file, Resource):
         file = file.path
     try:

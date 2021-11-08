@@ -164,7 +164,7 @@ class Pycritty(Command):
         if opacity < 0.0 or opacity > 1.0:
             raise ConfigError('Opacity should be between 0.0 and 1.0')
 
-        self.config['background_opacity'] = opacity
+        self.config['window']['opacity'] = opacity
         log.ok(f'Opacity set to {opacity:.2f}')
 
     def change_padding(self, padding=(1, 1)):
