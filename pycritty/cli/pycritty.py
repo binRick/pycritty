@@ -36,16 +36,16 @@ parser.add_argument(
     help='Change host',
 )
 parser.add_argument(
-    '-A', '--args',
-    dest='change_args',
-    metavar='ARGS',
-    help='Change args',
-)
-parser.add_argument(
     '-S', '--shell',
     dest='change_shell',
     metavar='SHELL',
     help='Change shell',
+)
+parser.add_argument(
+    '-A', '--args',
+    dest='change_args',
+    metavar='ARGS',
+    help='Change args',
 )
 parser.add_argument(
     '-f', '--font',

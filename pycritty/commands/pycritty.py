@@ -23,21 +23,25 @@ class Pycritty(Command):
 
     def __init__(self):
         self.config = yio.read_yaml(resources.config_file.get_or_create())
+        self.shell_changed = False
         self.host = None
         self.shell = None
         self.remote_host = None
         self.remote_port = 22
         self.remote_user = 'root'
         self.remote_cmd = None
+        self.remote_args = []
         if self.config is None:
             self.config = {}
 
     def get_ssh_cmd(self):
         if self.remote_host == None:
             self.remote_host = self.host
-        cmd = f"command ssh -tt -q -oUser={self.remote_user} -oHostname={self.remote_host} -oPort={self.remote_port} -oLogLevel=QUIET -oForwardAgent=yes -oStrictHostKeyChecking=no -tt -oControlMaster=auto root@{self.host}"
+        cmd = f"command ssh -tt -q -oUser={self.remote_user} -oHostname={self.remote_host} -oPort={self.remote_port} -oLogLevel=QUIET -oForwardAgent=yes -oStrictHostKeyChecking=no -tt -oControlMaster=auto"
+        #-oRemoteCommand=\"{self.remote_cmd}\""
         if self.remote_cmd != None:
-            cmd = f'{cmd} "{self.remote_cmd}"'
+            cmd = f'{cmd} -oRemoteCommand=\"{self.remote_cmd}\"'
+        cmd = f'{cmd} \"{self.host}\"'
         return cmd
 
     def apply(self):
@@ -77,8 +81,8 @@ class Pycritty(Command):
             'font_offset': self.change_font_offset,
             'padding': self.change_padding,
             'opacity': self.change_opacity,
-            'shell': self.change_shell,
             'args': self.change_args,
+            'shell': self.change_shell,
         }
 
         for opt, arg in kwargs.items():
@@ -180,13 +184,61 @@ class Pycritty(Command):
 
     def change_host(self, host: str):
         self.host = host
+        if host != 'localhost':
+            self.remote_host = host
         log.ok(f'change host> host: {self.host}')
 
+    def change_shell(self, shell: str):
+#        log.ok(f'Change shell- args={self.args}')
+        log.ok(f'Change shell- remote args={self.remote_args}')
+        self.shell_changed = True
+        self.shell = shell
+        if self.host != None:
+            local_shell = distutils.spawn.find_executable("bash")
+            if self.remote_host != None:
+                self.remote_host = self.host
+            self.config['shell']['program'] = local_shell
+            if len(self.remote_args) == 0:
+                remote_args = [self.shell,'-il']
+                self.change_args(remote_args)
+            else:
+                #remote_shell_exec = ' '.join(self.remote_args)
+                #self.remote_args = f'{self.shell} -ilc "{remote_shell_exec}"'
+                #{' '.join(self.remote_args)]
+                pass
+            log.ok(f'Set Program to Local Shell {local_shell}')
+            log.ok(f'Set Args to {remote_args}')
+        else:
+            self.config['shell']['program'] = shell
+            log.ok(f'Set Program to Shell {shell}')
+        self.test_shell()
+        log.ok(f'Change shell OK')
+
     def change_args(self, args: str):
-        args_decoded = os.environ[args]
+        if len(args) == 0:
+            return
+#        if not self.shell_changed:
+#            self.change_shell()
+        if type(args) == list:
+            args_decoded = ' '.join(args)
+        else:
+            if not args in os.environ.keys():
+                log.warn(f'env is missing key {args}')
+            args_decoded = os.environ[args]
+        print('args:', args)
+        print('args decoded:', args_decoded)
+        print('shell:', self.shell)
+        #print('remote shell:', self.remote_shell)
+        print('remote args:', self.remote_args)
+        print('remote host:', self.remote_host)
+        print('program:', self.config['shell']['program'])
         shell_args = []
 #        shell_args = ["--norc","--noprofile","-ilc"]
 #        shell_args = ["-ilc"]
+        if self.config['shell']['program'] == 'bash' or self.config['shell']['program'].endswith('/bash'):
+            shell_args.append("--norc")
+            shell_args.append("--noprofile")
+
         shell_args.append("-il")
         if len(args_decoded) > 0:
             shell_args.append("-c")
@@ -211,15 +263,6 @@ class Pycritty(Command):
 #        TA = ' '.join(
         test_cmd = f"{self.config['shell']['program']} {TA}"
         sys.stdout.write(test_cmd + "\n")
-
-    def change_shell(self, shell: str):
-        self.shell = shell
-        if self.host != None:
-            self.remote_host = self.host
-            shell = distutils.spawn.find_executable("bash")
-        self.config['shell']['program'] = shell
-        log.ok(f'Set Shell to {shell}')
-        self.test_shell()
 
     def change_opacity(self, opacity: float):
         if opacity < 0.0 or opacity > 1.0:

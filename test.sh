@@ -13,7 +13,9 @@ NEW_PROFILE2=dev-profile2-$(date +%s)
 NEW_SHELL1=/bin/bash
 NEW_SHELL2=/usr/local/bin/bash
 NEW_SHELL3=/usr/local/bin/zsh
-
+REMOTE_HOSTS="web1.vpntech.net web1.vpnservice.company f180.vpnservice.company"
+NEW_SHELLS="/bin/bash /usr/local/bin/bash /usr/local/bin/zsh"
+REMOTE_SHELLS="bash zsh fish"
 of=$(mktemp)
 ef=$(mktemp)
 if ! python setup.py install >$of 2>$ef; then
@@ -43,9 +45,6 @@ validate_config_shell_args() {
 		fi
 	) >&2
 }
-
-validate_config_shell_args
-exit
 
 basic_tests() {
 	ansi --green "List Help" >&2
@@ -81,33 +80,45 @@ profile_tests() {
 	echo
 }
 
+delete_dev_configs(){
+  find ~/.config/alacritty/saves -name "dev-*" -type f |xargs -I %  unlink %
+}
+
 shell_tests() {
-	cmd="$e -S $NEW_SHELL1"
-	ansi --green "Configuring shell $NEW_SHELL1 :: $(ansi --cyan "$cmd")" >&2
-	eval "$cmd"
-	echo
+	for REMOTE_HOST in $REMOTE_HOSTS; do
+	for REMOTE_SHELL in $REMOTE_SHELLS; do
+		local host_args="-H $REMOTE_HOST"
+    local E="$e $host_args"
+		cmd="$E -S $REMOTE_SHELL"
+		ansi --green "Configuring remote shell $REMOTE_SHELL :: $(ansi --cyan "$cmd")" >&2
+		eval "$cmd"
+		validate_config_shell_args
+		echo
+    eval $e save dev-shell-test-$REMOTE_HOST-$(basename $REMOTE_SHELL) -o
 
-	cmd="$e -S $NEW_SHELL2"
-	ansi --green "Configuring shell $NEW_SHELL2 :: $(ansi --cyan "$cmd")" >&2
-	eval "$cmd"
-	echo
+  done
+  done
+}
 
-	cmd="$e -S $NEW_SHELL3"
-	ansi --green "Configuring shell $NEW_SHELL3 :: $(ansi --cyan "$cmd")" >&2
-	eval "$cmd"
-	echo
-
-	ARGS="date && find / 2>/dev/null | pv >/dev/null"
-	cmd="EXEC_CMD='$ARGS' ./exec.sh -S $NEW_SHELL3 -A EXEC_CMD"
-	ansi --green "Configuring shell $NEW_SHELL3 and args $ARGS :: $(ansi --cyan "$cmd")" >&2
-	eval "$cmd"
-	echo
-
-	$e save $NEW_PROFILE1 -o
+get_shell_version(){
+  cmd="eval $1 --version|tr ' ' '\n'|grep '^[0-9]'|head -n1|tr '(' '\n'|head -n1"
+  eval "$cmd" | tr '.' '-'
 
 }
 
+shell_args_tests() {
+		ARGS="date && find / 2>/dev/null | pv >/dev/null"
+		cmd="SHELL_ARGS='$ARGS' $E -S $NEW_SHELL3 -A SHELL_ARGS"
+		ansi --green "Configuring shell $NEW_SHELL3 and args $ARGS :: $(ansi --cyan "$cmd")" >&2
+		eval "$cmd"
+		echo
+
+		$E save $NEW_PROFILE1 -o
+		validate_config_shell_args
+}
+
 main() {
+delete_dev_configs
 	[[ "$BASIC_TESTS_ENABLED" == 1 ]] && basic_tests
 	[[ "$PROFILE_TESTS_ENABLED" == 1 ]] && profile_tests
 	[[ "$SHELL_TESTS_ENABLED" == 1 ]] && shell_tests
