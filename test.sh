@@ -27,6 +27,26 @@ export SKIP_BUILD=1
 ansi --green "Build OK" >&2
 echo
 
+validate_config_shell_args() {
+	program="$(command cat ~/.config/alacritty/alacritty.yml | yaml2json | jq '.shell.program' -Mrc)"
+	args="$(command cat ~/.config/alacritty/alacritty.yml | yaml2json | jq '.shell.args' -Mr | tail -n2 | head -n1)"
+	args="$(echo -e "$args" | tr -s ' ' | sed 's/^[[:space:]]//g')"
+	(
+		echo -e "$(ansi --cyan PROGRAM:)                 $program"
+		echo -e "$(ansi --cyan ARGS:)                    $args"
+		ef=$(mktemp)
+		if ! bash -n <(echo -e "$args") 2>$ef; then
+			ansi --green "args bash syntax failed"
+			cat $ef
+		else
+			ansi --green "syntax ok"
+		fi
+	) >&2
+}
+
+validate_config_shell_args
+exit
+
 basic_tests() {
 	ansi --green "List Help" >&2
 	$e ls -h
@@ -72,10 +92,18 @@ shell_tests() {
 	eval "$cmd"
 	echo
 
-  cmd="$e -S $NEW_SHELL3"
+	cmd="$e -S $NEW_SHELL3"
 	ansi --green "Configuring shell $NEW_SHELL3 :: $(ansi --cyan "$cmd")" >&2
 	eval "$cmd"
 	echo
+
+	ARGS="date && find / 2>/dev/null | pv >/dev/null"
+	cmd="EXEC_CMD='$ARGS' ./exec.sh -S $NEW_SHELL3 -A EXEC_CMD"
+	ansi --green "Configuring shell $NEW_SHELL3 and args $ARGS :: $(ansi --cyan "$cmd")" >&2
+	eval "$cmd"
+	echo
+
+	$e save $NEW_PROFILE1 -o
 
 }
 

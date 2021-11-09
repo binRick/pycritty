@@ -4,6 +4,8 @@ from .command import Command
 from .. import resources, PycrittyError
 from ..io import log, yio
 from rich import print, pretty, inspect
+import json, base64, os, sys
+import distutils.spawn
 
 class ConfigError(PycrittyError):
     def __init__(self, message='Error applying configuration'):
@@ -21,8 +23,22 @@ class Pycritty(Command):
 
     def __init__(self):
         self.config = yio.read_yaml(resources.config_file.get_or_create())
+        self.host = None
+        self.shell = None
+        self.remote_host = None
+        self.remote_port = 22
+        self.remote_user = 'root'
+        self.remote_cmd = None
         if self.config is None:
             self.config = {}
+
+    def get_ssh_cmd(self):
+        if self.remote_host == None:
+            self.remote_host = self.host
+        cmd = f"command ssh -tt -q -oUser={self.remote_user} -oHostname={self.remote_host} -oPort={self.remote_port} -oLogLevel=QUIET -oForwardAgent=yes -oStrictHostKeyChecking=no -tt -oControlMaster=auto root@{self.host}"
+        if self.remote_cmd != None:
+            cmd = f'{cmd} "{self.remote_cmd}"'
+        return cmd
 
     def apply(self):
         yio.write_yaml(self.config, resources.config_file)
@@ -62,6 +78,7 @@ class Pycritty(Command):
             'padding': self.change_padding,
             'opacity': self.change_opacity,
             'shell': self.change_shell,
+            'args': self.change_args,
         }
 
         for opt, arg in kwargs.items():
@@ -161,13 +178,48 @@ class Pycritty(Command):
         self.config['font']['size'] = size
         log.ok(f'Font size set to {size:.1f}')
 
+    def change_host(self, host: str):
+        self.host = host
+        log.ok(f'change host> host: {self.host}')
+
+    def change_args(self, args: str):
+        args_decoded = os.environ[args]
+        shell_args = []
+#        shell_args = ["--norc","--noprofile","-ilc"]
+#        shell_args = ["-ilc"]
+        shell_args.append("-il")
+        if len(args_decoded) > 0:
+            shell_args.append("-c")
+            if self.host != None:
+                self.remote_cmd = args_decoded
+                shell_args.append(self.get_ssh_cmd())
+            else:
+                shell_args.append(args_decoded)
+        self.config['shell']['args'] = shell_args
+        log.ok(f'Set Args to {args} / {shell_args}')
+
+    def test_shell(self):
+        TA = ''
+        on = 0
+        for a in self.config['shell']['args']:
+            if on == (len(self.config['shell']['args'])-1):
+                a = a.replace('"','\\\"')
+                TA = f'{TA} "{a}"'
+            else:
+                TA = f'{TA} {a}'
+            on += 1
+#        TA = ' '.join(
+        test_cmd = f"{self.config['shell']['program']} {TA}"
+        sys.stdout.write(test_cmd + "\n")
+
     def change_shell(self, shell: str):
-        shell_file = ''
-        log.ok(f'Reading shell {shell} config from {shell_file}')
-        #shell_config = yio.read_yaml(shell_file)
-        #print(self.config)
+        self.shell = shell
+        if self.host != None:
+            self.remote_host = self.host
+            shell = distutils.spawn.find_executable("bash")
         self.config['shell']['program'] = shell
         log.ok(f'Set Shell to {shell}')
+        self.test_shell()
 
     def change_opacity(self, opacity: float):
         if opacity < 0.0 or opacity > 1.0:
