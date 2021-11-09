@@ -13,7 +13,7 @@ def formatter(indent_increment=2, max_help_position=40, width=None):
 
 parser = argparse.ArgumentParser(
     prog='pycritty',
-    description='Change your Alacritty config on the fly!',
+    description='Manage Alacritty Config',
     argument_default=argparse.SUPPRESS,
     formatter_class=formatter(),
 )
@@ -40,6 +40,18 @@ parser.add_argument(
     dest='change_shell',
     metavar='SHELL',
     help='Change shell',
+)
+parser.add_argument(
+    '-L', '--local-ports',
+    dest='change_local_ports',
+    metavar='LOCAL_PORTS',
+    help='Change local ports',
+)
+parser.add_argument(
+    '-U', '--user',
+    dest='change_user',
+    metavar='ARGS',
+    help='Change user',
 )
 parser.add_argument(
     '-A', '--args',

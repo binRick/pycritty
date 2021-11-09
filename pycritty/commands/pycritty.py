@@ -24,15 +24,22 @@ class Pycritty(Command):
     def __init__(self):
         self.config = yio.read_yaml(resources.config_file.get_or_create())
         self.shell_changed = False
+        self.local_paths = {
+           'bash': distutils.spawn.find_executable("bash"),
+           'alacritty': distutils.spawn.find_executable("alacritty"),
+        }
         self.host = None
+        self.user = None
         self.shell = None
         self.remote_host = None
+        self.local_ports = []
         self.remote_port = 22
         self.remote_user = 'root'
         self.remote_cmd = None
         self.remote_args = []
         if self.config is None:
             self.config = {}
+        inspect(self)
 
     def get_ssh_cmd(self):
         if self.remote_host == None:
@@ -182,15 +189,29 @@ class Pycritty(Command):
         self.config['font']['size'] = size
         log.ok(f'Font size set to {size:.1f}')
 
+    def change_local_ports(self, local_ports: str):
+        if ',' in local_ports:
+            for lp in local_ports.split(','):
+                if not lp in self.local_ports:
+                    self.local_ports.append(int(lp, base=10))
+        else:                    
+            self.local_ports = [int(local_ports, base=10)]
+        log.ok(f'changed local_ports to {self.local_ports}')
+
+    def change_user(self, user: str):
+        self.user = user
+        log.ok(f'changed user to {self.user}')
+
     def change_host(self, host: str):
         self.host = host
         if host != 'localhost':
             self.remote_host = host
         log.ok(f'change host> host: {self.host}')
 
+#            local_tmux = distutils.spawn.find_executable("tmux")
+#            local_ssh = distutils.spawn.find_executable("ssh")
     def change_shell(self, shell: str):
-#        log.ok(f'Change shell- args={self.args}')
-        log.ok(f'Change shell- remote args={self.remote_args}')
+        log.ok(f'Change shell > shell={shell}, args={self.remote_args}')
         self.shell_changed = True
         self.shell = shell
         if self.host != None:
@@ -198,21 +219,16 @@ class Pycritty(Command):
             if self.remote_host != None:
                 self.remote_host = self.host
             self.config['shell']['program'] = local_shell
+            log.ok(f'Set Program Path to Local Shell {local_shell} [REMOTE]')
             if len(self.remote_args) == 0:
                 remote_args = [self.shell,'-il']
                 self.change_args(remote_args)
-            else:
-                #remote_shell_exec = ' '.join(self.remote_args)
-                #self.remote_args = f'{self.shell} -ilc "{remote_shell_exec}"'
-                #{' '.join(self.remote_args)]
-                pass
-            log.ok(f'Set Program to Local Shell {local_shell}')
-            log.ok(f'Set Args to {remote_args}')
+                log.ok(f'Set Shell Args to {remote_args}')
         else:
             self.config['shell']['program'] = shell
-            log.ok(f'Set Program to Shell {shell}')
+            log.ok(f'Set Program to Shell {shell} [LOCAL]')
         self.test_shell()
-        log.ok(f'Change shell OK')
+        log.ok(f"Changed shell OK- {self.config['shell']['program']}")
 
     def change_args(self, args: str):
         if len(args) == 0:
