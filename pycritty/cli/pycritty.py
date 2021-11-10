@@ -24,6 +24,12 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '-T', '--tmux',
+    dest='enable_tmux_mode',
+    metavar='TMUX_ENABLED',
+    help='Enable Tmux mode',
+)
+parser.add_argument(
     '-t', '--theme',
     dest='change_theme',
     metavar='THEME',

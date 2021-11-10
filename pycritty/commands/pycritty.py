@@ -28,7 +28,9 @@ class Pycritty(Command):
            'bash': distutils.spawn.find_executable("bash"),
            'alacritty': distutils.spawn.find_executable("alacritty"),
         }
+        self.tmux_enabled = False
         self.host = None
+        self.base_config = None
         self.user = None
         self.shell = None
         self.remote_host = None
@@ -90,11 +92,19 @@ class Pycritty(Command):
             'opacity': self.change_opacity,
             'args': self.change_args,
             'shell': self.change_shell,
+            'base_config': self.change_base_config,
         }
 
         for opt, arg in kwargs.items():
             if opt in options:
                 options[opt](arg)
+
+    def enable_tmux_mode(self, dat: bool):
+        self.tmux_enabled = True
+        print('tmux_enabled: ', self.tmux_enabled)
+
+    def change_base_config(self, name: str):
+        print('change_base_config: ', name)
 
     def change_theme(self, theme: str):
         theme_file = resources.get_theme(theme)
@@ -218,8 +228,18 @@ class Pycritty(Command):
             local_shell = distutils.spawn.find_executable("bash")
             if self.remote_host != None:
                 self.remote_host = self.host
-            self.config['shell']['program'] = local_shell
-            log.ok(f'Set Program Path to Local Shell {local_shell} [REMOTE]')
+            if not 'shell' in dict(self.config).keys():
+                log.warn(f'Config is missing shell property!')
+                self.config['shell'] = {
+                    'program': '',
+                    'args': [],
+                }
+            print(dict(self.config).keys())
+            if 'shell' in dict(self.config).keys():
+                if not 'program' in self.config['shell'].keys():
+                    log.warn(f'Config is missing program property!')
+                self.config['shell']['program'] = local_shell
+                log.ok(f'Set Program Path to Local Shell {local_shell} [REMOTE]')
             if len(self.remote_args) == 0:
                 remote_args = [self.shell,'-il']
                 self.change_args(remote_args)
