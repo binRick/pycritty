@@ -5,3 +5,4 @@ from .load import load_parser
 from .install import install_parser
 from .rm import remove_parser
 from .run import run
+from .profile import profile

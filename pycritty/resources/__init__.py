@@ -10,6 +10,10 @@ saves_dir = ConfigDir(base_dir.path / 'saves')
 hosts_dir = ConfigDir(base_dir.path / 'hosts')
 shells_dir = ConfigDir(base_dir.path / 'shells')
 commands_dir = ConfigDir(base_dir.path / 'commands')
+positions_dir = ConfigDir(base_dir.path / 'positions')
+positions_dir = ConfigDir(base_dir.path / 'positions')
+profiles_dir = ConfigDir(base_dir.path / 'profiles')
+tmuxp_profiles_dir = ConfigDir(base_dir.path / 'tmuxp')
 
 
 def get_theme(theme: str) -> ConfigFile:

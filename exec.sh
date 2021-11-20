@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 cd $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
 APP_ICON=~/Downloads/terminal_icons/red-terminal.png
 APP_NAME="MY_APP1"
 APP_EXEC_ARGS=$@
@@ -21,7 +22,6 @@ EOF
 	ansi --yellow --bg-black --italic "$_cmd"
 	echo -e "\n$_cmd\n"
 	eval "$_cmd"
-
 }
 
 xxx_cmd="$(
@@ -33,7 +33,6 @@ EOF
 )"
 
 if [[ "$DM" == 1 ]]; then
-
 	gen_wrapper
 	exit
 fi
@@ -45,7 +44,8 @@ fi
 if [[ ! -f ./.v/bin/activate ]]; then
 	python3 -m venv ./.v
 fi
+
 wait
 source ./.v/bin/activate
-
+unlink $APP_EXEC
 exec ./.v/bin/pycritty $@

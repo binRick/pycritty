@@ -1,10 +1,11 @@
 from typing import List, Dict, Any
 from .command import Command
 from .. import PycrittyError
-from ..resources import fonts_file, themes_dir, saves_dir, hosts_dir, shells_dir, commands_dir
+from ..resources import fonts_file, themes_dir, saves_dir, hosts_dir, shells_dir, commands_dir, positions_dir, profiles_dir
 from ..resources.resource import Resource
 from ..io import log
 from ..io.yio import read_yaml
+from pathlib import Path
 import psutil
 
 class ListResource(Command):
@@ -17,6 +18,8 @@ class ListResource(Command):
             'hosts': ('Hosts', log.Color.GREEN, self.list_hosts),
             'shells': ('Shells', log.Color.RED, self.list_shells),
             'commands': ('Commands', log.Color.PURPLE, self.list_commands),
+            'positions': ('Positions', log.Color.YELLOW, self.list_positions),
+            'profiles': ('Profiles', log.Color.YELLOW, self.list_profiles),
         }
 
     def _list_dir(self, directory: Resource):
@@ -36,6 +39,22 @@ class ListResource(Command):
                 f'Failed listing shells, directory {shells_dir.path} not found'
             )
         return self._list_dir(shells_dir)
+
+    def list_profiles(self) -> List[str]:
+        Path( profiles_dir.path ).mkdir( parents=True, exist_ok=True )
+        if not profiles_dir.exists():
+            raise PycrittyError(
+                f'Failed listing profiles, directory {profiles_dir.path} not found'
+            )
+        return self._list_dir(profiles_dir)
+
+    def list_positions(self) -> List[str]:
+        Path( positions_dir.path ).mkdir( parents=True, exist_ok=True )
+        if not positions_dir.exists():
+            raise PycrittyError(
+                f'Failed listing positions, directory {positions_dir.path} not found'
+            )
+        return self._list_dir(positions_dir)
 
     def list_commands(self) -> List[str]:
         if not commands_dir.exists():

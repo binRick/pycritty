@@ -86,7 +86,29 @@ parser.add_argument(
     help='Change background opacity',
 )
 parser.add_argument(
-    '-p', '--padding',
+    '-r', '--rows',
+    type=int,
+    nargs=1,
+    dest='change_rows',
+    help='Change rows',
+)
+parser.add_argument(
+    '-c', '--columns',
+    type=int,
+    nargs=1,
+    dest='change_columns',
+    help='Change columns',
+)
+parser.add_argument(
+    '-p', '--position',
+    metavar=('X', 'Y'),
+    type=int,
+    nargs=2,
+    dest='change_position',
+    help='Change window position X Y values',
+)
+parser.add_argument(
+    '-P', '--padding',
     metavar=('X', 'Y'),
     type=int,
     nargs=2,

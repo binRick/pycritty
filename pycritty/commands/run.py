@@ -1,4 +1,5 @@
 from typing import Dict, Any, Union
+import sys
 from pathlib import Path
 from .. import PycrittyError
 from .command import Command
@@ -63,11 +64,21 @@ class RunConfig(Command):
                 new_conf.theme = args['change_theme']
             if 'change_args' in dict(args).keys():
                 new_conf.change_args(args['change_args'])
-        print("\n\n\nshell args:\n\n\n", new_conf)
-        if False:
+            if 'change_position' in dict(args).keys():
+                new_conf.change_position(args['change_position'])
+        if True:
             exec_cmd = f'eval ssh '
             exec_cmd = new_conf.get_ssh_cmd()
-        inspect(new_conf, private=True, methods=True)
+            exec_cmd = f"{exec_cmd} \"{new_conf.config['shell']['program']}"
+            for a in new_conf.config['shell']['args']:
+                exec_cmd = f"{exec_cmd} {a}"
+            exec_cmd = f"{exec_cmd}\""
+            print(exec_cmd)
+            Args = ['bash','--noprofile','--norc', exec_cmd]
+            new_conf.config['shell']['args'] = Args
+            new_conf.config['shell']['program'] = 'env'
+        if False:
+            print(new_conf.config)
         if False:
             pass
         if True:

@@ -28,6 +28,9 @@ class Pycritty(Command):
            'bash': distutils.spawn.find_executable("bash"),
            'alacritty': distutils.spawn.find_executable("alacritty"),
         }
+        self.position = [0, 0]
+        self.rows = 20
+        self.columns = 50
         self.tmux_enabled = False
         self.host = None
         self.base_config = None
@@ -41,7 +44,7 @@ class Pycritty(Command):
         self.remote_args = []
         if self.config is None:
             self.config = {}
-        inspect(self)
+        print(self)
 
     def get_ssh_cmd(self):
         if self.remote_host == None:
@@ -89,6 +92,9 @@ class Pycritty(Command):
             'font_size': self.change_font_size,
             'font_offset': self.change_font_offset,
             'padding': self.change_padding,
+            'rows': self.change_rows,
+            'columns': self.change_columns,
+            'position': self.change_position,
             'opacity': self.change_opacity,
             'args': self.change_args,
             'shell': self.change_shell,
@@ -306,6 +312,31 @@ class Pycritty(Command):
 
         self.config['window']['opacity'] = opacity
         log.ok(f'Opacity set to {opacity:.2f}')
+
+    def change_columns(self, columns=50):
+        if len(columns) != 1:
+            raise ConfigError('columns val should be single int')
+        self.columns = columns
+        self.config['window']['dimensions']['columns'] = self.columns
+
+    def change_rows(self, rows=20):
+        if len(rows) != 1:
+            raise ConfigError('rows val should be single int')
+        self.rows = rows
+        self.config['window']['dimensions']['lines'] = self.rows
+
+    def change_position(self, position=(0, 0)):
+        if len(position) != 2:
+            raise ConfigError('Position should only have an x and y value')
+
+        x, y = position
+        self.position[0] = x
+        self.position[1] = y
+
+        self.config['window']['position']['x'] = self.position[0]
+        self.config['window']['position']['y'] = self.position[1]
+
+        print(f'[position] > x={self.position[0]}|y={self.position[1]}')
 
     def change_padding(self, padding=(1, 1)):
         if len(padding) != 2:
